@@ -1,0 +1,144 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  userId      String   @unique // Custom user ID like STUD001
+  name        String
+  email       String   @unique
+  phone       String?
+  photo       String?
+  qrCode      String   @unique
+  pin         String   // 4-digit PIN (hashed)
+  role        Role     @default(USER)
+  walletBalance Float  @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  orders      Order[]
+  transactions WalletTransaction[]
+  
+  @@map("users")
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  image     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  items     Item[]
+  
+  @@map("categories")
+}
+
+model Item {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  image       String?
+  isAvailable Boolean  @default(true)
+  categoryId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  orderItems  OrderItem[]
+  
+  @@map("items")
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  orderNumber String      @unique
+  userId      String
+  totalAmount Float
+  status      OrderStatus @default(PENDING)
+  tokenNumber String      @unique
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  user        User        @relation(fields: [userId], references: [id])
+  orderItems  OrderItem[]
+  
+  @@map("orders")
+}
+
+model OrderItem {
+  id       String @id @default(cuid())
+  orderId  String
+  itemId   String
+  quantity Int
+  price    Float
+  
+  // Relations
+  order    Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  item     Item   @relation(fields: [itemId], references: [id])
+  
+  @@map("order_items")
+}
+
+model WalletTransaction {
+  id              String            @id @default(cuid())
+  userId          String
+  amount          Float
+  type            TransactionType
+  description     String?
+  paymentMethod   PaymentMethod?
+  transactionId   String?           @unique
+  status          TransactionStatus @default(PENDING)
+  createdAt       DateTime          @default(now())
+
+  // Relations
+  user            User              @relation(fields: [userId], references: [id])
+  
+  @@map("wallet_transactions")
+}
+
+enum Role {
+  USER
+  ADMIN
+  STAFF
+}
+
+enum OrderStatus {
+  PENDING
+  PREPARING
+  READY
+  DELIVERED
+  CANCELLED
+}
+
+enum TransactionType {
+  CREDIT
+  DEBIT
+}
+
+enum PaymentMethod {
+  ADMIN_RECHARGE
+  UPI
+  CASH
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
