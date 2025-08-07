@@ -9,11 +9,14 @@ import {
   Plus,
   Minus,
   CreditCard,
-  Receipt
+  Receipt,
+  UserCircle
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '../common/LoadingSpinner';
+import WalletPage from './WalletPage';
+import ProfilePage from './ProfilePage';
 
 const UserDashboard = () => {
   const { user, logout, updateUserBalance } = useAuth();
@@ -197,6 +200,26 @@ const UserDashboard = () => {
             >
               My Orders
             </button>
+            <button
+              onClick={() => setActiveTab('wallet')}
+              className={`py-4 px-2 border-b-2 font-medium text-sm ${
+                activeTab === 'wallet'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Wallet
+            </button>
+            <button
+              onClick={() => setActiveTab('profile')}
+              className={`py-4 px-2 border-b-2 font-medium text-sm ${
+                activeTab === 'profile'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Profile
+            </button>
           </div>
         </div>
       </div>
@@ -315,6 +338,9 @@ const UserDashboard = () => {
           </div>
         )}
 
+        {activeTab === 'wallet' && <WalletPage />}
+        
+        {activeTab === 'profile' && <ProfilePage />}
         {activeTab === 'orders' && (
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-6">My Orders</h2>

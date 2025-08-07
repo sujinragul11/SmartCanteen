@@ -5,7 +5,6 @@ import {
   Plus, 
   Edit3, 
   Trash2, 
-  Mail,
   QrCode,
   CreditCard,
   BarChart3,
@@ -15,6 +14,11 @@ import {
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import LoadingSpinner from '../common/LoadingSpinner';
+import UserFormModal from './UserFormModal';
+import WalletRechargeModal from './WalletRechargeModal';
+import ItemFormModal from './ItemFormModal';
+import CategoryFormModal from './CategoryFormModal';
+import ReportsPage from './ReportsPage';
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
@@ -25,6 +29,12 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [showUserForm, setShowUserForm] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [showWalletRecharge, setShowWalletRecharge] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showItemForm, setShowItemForm] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+  const [showCategoryForm, setShowCategoryForm] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
 
   useEffect(() => {
     fetchUsers();
@@ -66,9 +76,19 @@ const AdminDashboard = () => {
       await axios.post('/users', userData);
       toast.success('User created successfully');
       fetchUsers();
-      setShowUserForm(false);
     } catch (error) {
       toast.error(error.response?.data?.error || 'Failed to create user');
+    }
+  };
+
+  const handleUpdateUser = async (userData) => {
+    try {
+      await axios.put(`/users/${editingUser.id}`, userData);
+      toast.success('User updated successfully');
+      fetchUsers();
+      setEditingUser(null);
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to update user');
     }
   };
 
@@ -85,6 +105,64 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleWalletRecharge = (user) => {
+    setSelectedUser(user);
+    setShowWalletRecharge(true);
+  };
+
+  const handleCreateCategory = async (categoryData) => {
+    try {
+      await axios.post('/items/categories', categoryData);
+      toast.success('Category created successfully');
+      fetchCategories();
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to create category');
+    }
+  };
+
+  const handleUpdateCategory = async (categoryData) => {
+    try {
+      await axios.put(`/items/categories/${editingCategory.id}`, categoryData);
+      toast.success('Category updated successfully');
+      fetchCategories();
+      setEditingCategory(null);
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to update category');
+    }
+  };
+
+  const handleCreateItem = async (itemData) => {
+    try {
+      await axios.post('/items', itemData);
+      toast.success('Item created successfully');
+      fetchItems();
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to create item');
+    }
+  };
+
+  const handleUpdateItem = async (itemData) => {
+    try {
+      await axios.put(`/items/${editingItem.id}`, itemData);
+      toast.success('Item updated successfully');
+      fetchItems();
+      setEditingItem(null);
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to update item');
+    }
+  };
+
+  const handleDeleteItem = async (itemId) => {
+    if (!confirm('Are you sure you want to delete this item?')) return;
+    
+    try {
+      await axios.delete(`/items/${itemId}`);
+      toast.success('Item deleted successfully');
+      fetchItems();
+    } catch (error) {
+      toast.error('Failed to delete item');
+    }
+  };
   const tabs = [
     { id: 'users', label: 'Users', icon: Users },
     { id: 'items', label: 'Items', icon: Settings },
@@ -218,12 +296,17 @@ const AdminDashboard = () => {
                           <QrCode className="h-4 w-4" />
                         </button>
                         <button
+                          onClick={() => handleWalletRecharge(user)}
                           className="text-green-600 hover:text-green-900 p-1"
                           title="Recharge Wallet"
                         >
                           <CreditCard className="h-4 w-4" />
                         </button>
                         <button
+                          onClick={() => {
+                            setEditingUser(user);
+                            setShowUserForm(true);
+                          }}
                           className="text-gray-600 hover:text-gray-900 p-1"
                           title="Edit User"
                         >
@@ -245,10 +328,12 @@ const AdminDashboard = () => {
               <h2 className="text-2xl font-bold text-gray-900">Items & Categories</h2>
               <div className="space-x-2">
                 <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2 inline-flex">
+                  onClick={() => setShowCategoryForm(true)}
                   <Plus className="h-4 w-4" />
                   <span>Add Category</span>
                 </button>
                 <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 inline-flex">
+                  onClick={() => setShowItemForm(true)}
                   <Plus className="h-4 w-4" />
                   <span>Add Item</span>
                 </button>
@@ -268,10 +353,11 @@ const AdminDashboard = () => {
                       </div>
                       <div className="space-x-2">
                         <button className="text-gray-600 hover:text-gray-900 p-1">
+                          onClick={() => {
+                            setEditingCategory(category);
+                            setShowCategoryForm(true);
+                          }}
                           <Edit3 className="h-4 w-4" />
-                        </button>
-                        <button className="text-red-600 hover:text-red-900 p-1">
-                          <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
                     </div>
@@ -296,9 +382,14 @@ const AdminDashboard = () => {
                       </div>
                       <div className="space-x-2">
                         <button className="text-gray-600 hover:text-gray-900 p-1">
+                          onClick={() => {
+                            setEditingItem(item);
+                            setShowItemForm(true);
+                          }}
                           <Edit3 className="h-4 w-4" />
                         </button>
                         <button className="text-red-600 hover:text-red-900 p-1">
+                          onClick={() => handleDeleteItem(item.id)}
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
@@ -312,187 +403,57 @@ const AdminDashboard = () => {
 
         {/* Reports Tab */}
         {activeTab === 'reports' && (
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Reports & Analytics</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-white p-6 rounded-lg shadow">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Users</p>
-                    <p className="text-3xl font-bold text-blue-600">{users.length}</p>
-                  </div>
-                  <Users className="h-8 w-8 text-blue-400" />
-                </div>
-              </div>
-              
-              <div className="bg-white p-6 rounded-lg shadow">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Items</p>
-                    <p className="text-3xl font-bold text-green-600">{items.length}</p>
-                  </div>
-                  <Settings className="h-8 w-8 text-green-400" />
-                </div>
-              </div>
-              
-              <div className="bg-white p-6 rounded-lg shadow">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Categories</p>
-                    <p className="text-3xl font-bold text-purple-600">{categories.length}</p>
-                  </div>
-                  <BarChart3 className="h-8 w-8 text-purple-400" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
-                  <h4 className="font-medium text-gray-900 mb-2">Daily Sales Report</h4>
-                  <p className="text-sm text-gray-600">View today's transactions</p>
-                </button>
-                
-                <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
-                  <h4 className="font-medium text-gray-900 mb-2">Wallet Report</h4>
-                  <p className="text-sm text-gray-600">Check wallet transactions</p>
-                </button>
-                
-                <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
-                  <h4 className="font-medium text-gray-900 mb-2">User Activity</h4>
-                  <p className="text-sm text-gray-600">Analyze user behavior</p>
-                </button>
-                
-                <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left">
-                  <h4 className="font-medium text-gray-900 mb-2">Export Data</h4>
-                  <p className="text-sm text-gray-600">Download reports as CSV</p>
-                </button>
-              </div>
-            </div>
-          </div>
+          <ReportsPage />
         )}
       </div>
 
       {/* User Creation Modal */}
-      {showUserForm && (
-        <UserFormModal
-          onClose={() => setShowUserForm(false)}
-          onSubmit={handleCreateUser}
-        />
-      )}
+      <UserFormModal
+        isOpen={showUserForm}
+        onClose={() => {
+          setShowUserForm(false);
+          setEditingUser(null);
+        }}
+        onSubmit={editingUser ? handleUpdateUser : handleCreateUser}
+        editingUser={editingUser}
+      />
+
+      {/* Wallet Recharge Modal */}
+      <WalletRechargeModal
+        isOpen={showWalletRecharge}
+        onClose={() => {
+          setShowWalletRecharge(false);
+          setSelectedUser(null);
+        }}
+        user={selectedUser}
+        onRechargeComplete={fetchUsers}
+      />
+
+      {/* Item Form Modal */}
+      <ItemFormModal
+        isOpen={showItemForm}
+        onClose={() => {
+          setShowItemForm(false);
+          setEditingItem(null);
+        }}
+        onSubmit={editingItem ? handleUpdateItem : handleCreateItem}
+        categories={categories}
+        editingItem={editingItem}
+      />
+
+      {/* Category Form Modal */}
+      <CategoryFormModal
+        isOpen={showCategoryForm}
+        onClose={() => {
+          setShowCategoryForm(false);
+          setEditingCategory(null);
+        }}
+        onSubmit={editingCategory ? handleUpdateCategory : handleCreateCategory}
+        editingCategory={editingCategory}
+      />
     </div>
   );
 };
 
-// User Form Modal Component
-const UserFormModal = ({ onClose, onSubmit }) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    pin: '',
-    role: 'USER'
-  });
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      await onSubmit(formData);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-        <div className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Add New User</h3>
-          
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">4-Digit PIN</label>
-              <input
-                type="password"
-                maxLength="4"
-                value={formData.pin}
-                onChange={(e) => setFormData({...formData, pin: e.target.value.replace(/\D/g, '')})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="1234"
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-              <select
-                value={formData.role}
-                onChange={(e) => setFormData({...formData, role: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="USER">User</option>
-                <option value="STAFF">Staff</option>
-                <option value="ADMIN">Admin</option>
-              </select>
-            </div>
-            
-            <div className="flex justify-end space-x-3 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-              >
-                {loading ? <LoadingSpinner size="small" color="white" /> : 'Create User'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export default AdminDashboard;
