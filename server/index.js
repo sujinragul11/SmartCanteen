@@ -9,6 +9,7 @@ const itemRoutes = require('./routes/items');
 const orderRoutes = require('./routes/orders');
 const walletRoutes = require('./routes/wallet');
 const reportRoutes = require('./routes/reports');
+const demoAuthRoutes = require('./routes/demoAuth');
 
 const app = express();
 const prisma = new PrismaClient();
@@ -24,6 +25,7 @@ app.use('/api/items', itemRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/wallet', walletRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/demo-auth', demoAuthRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
