@@ -1,16 +1,6 @@
 import React, { useState } from 'react';
 import { useDemoAuth } from '../../../contexts/DemoAuthContext';
-import { 
-  User, 
-  Clock, 
-  CheckCircle, 
-  AlertCircle, 
-  LogOut,
-  Calendar,
-  Tasks,
-  MessageSquare,
-  Bell
-} from 'lucide-react';
+import { User, Clock, CheckCircle, AlertCircle, LogOut, Calendar, Tag as Tasks, MessageSquare, Bell } from 'lucide-react';
 
 const StaffDashboard = () => {
   const { user, logout } = useDemoAuth();
